@@ -11,7 +11,7 @@ import { WHATSAPP_NUMBER } from '@/lib/config'
 import { formatWhatsAppMessage, isWhatsAppConfigured } from '@/lib/whatsapp'
 
 export default function CartPage() {
-  const { cart, isLoading, removeFromCart, updateQuantity, getTotal } = useCart()
+  const { cart, isLoading, supabaseReady, removeFromCart, updateQuantity, getTotal, submitOrderToSupabase } = useCart()
   const [processing, setProcessing] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -32,6 +32,19 @@ export default function CartPage() {
 
     setProcessing(true)
     try {
+      // Submit order to Supabase if configured
+      if (supabaseReady) {
+        console.log('[v0] Submitting order to Supabase...')
+        const result = await submitOrderToSupabase()
+        if (!result.success) {
+          toast.error(result.message)
+          setProcessing(false)
+          return
+        }
+        console.log('[v0] Order submitted to Supabase:', result.orderId)
+        toast.success('Order saved to database!')
+      }
+
       const total = getTotal()
       const message = encodeURIComponent(formatWhatsAppMessage(cart, total))
       
@@ -40,6 +53,7 @@ export default function CartPage() {
       
       toast.success('Redirecting to WhatsApp for payment confirmation...')
     } catch (error) {
+      console.error('[v0] Checkout error:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to process order')
     } finally {
       setProcessing(false)

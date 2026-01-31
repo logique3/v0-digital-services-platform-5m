@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { isSupabaseConfigured, createOrder, getUser } from '@/lib/supabase'
 
 export interface CartItem {
   service_id: string
@@ -15,18 +16,29 @@ const CART_STORAGE_KEY = 'atlas_cart'
 export function useCart() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [supabaseReady, setSupabaseReady] = useState(false)
 
   // Load cart from localStorage on mount
   useEffect(() => {
+    console.log('[v0] Initializing cart hook...')
     try {
       const storedCart = localStorage.getItem(CART_STORAGE_KEY)
       if (storedCart) {
         setCart(JSON.parse(storedCart))
+        console.log('[v0] Cart loaded from localStorage')
       }
     } catch (error) {
       console.error('[v0] Error loading cart from localStorage:', error)
       setCart([])
     } finally {
+      // Check Supabase configuration
+      const configured = isSupabaseConfigured()
+      setSupabaseReady(configured)
+      if (configured) {
+        console.log('[v0] Supabase is configured and ready')
+      } else {
+        console.log('[v0] Supabase not configured - using localStorage only')
+      }
       setIsLoading(false)
     }
   }, [])
@@ -36,6 +48,7 @@ export function useCart() {
     if (!isLoading) {
       try {
         localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart))
+        console.log('[v0] Cart saved to localStorage')
       } catch (error) {
         console.error('[v0] Error saving cart to localStorage:', error)
       }
@@ -87,14 +100,60 @@ export function useCart() {
     return cart.reduce((count, item) => count + item.quantity, 0)
   }, [cart])
 
+  const submitOrderToSupabase = useCallback(async () => {
+    console.log('[v0] Submitting order to Supabase...')
+    
+    if (!supabaseReady) {
+      console.warn('[v0] Supabase not ready - order saved locally only')
+      return { success: true, orderId: null, message: 'Order saved locally (Supabase not configured)' }
+    }
+
+    if (cart.length === 0) {
+      console.error('[v0] Cannot submit empty cart')
+      return { success: false, message: 'Cart is empty' }
+    }
+
+    try {
+      // Get current user
+      const user = await getUser()
+      if (!user) {
+        console.warn('[v0] No user - creating guest order')
+        // For guest orders, use a temporary ID
+        const guestId = 'guest_' + Date.now()
+        const order = await createOrder(guestId, cart, getTotal())
+        
+        if (order) {
+          console.log('[v0] Guest order created:', order.id)
+          clearCart()
+          return { success: true, orderId: order.id, message: 'Order submitted successfully' }
+        }
+      } else {
+        const order = await createOrder(user.id, cart, getTotal())
+        
+        if (order) {
+          console.log('[v0] Order created for user:', order.id)
+          clearCart()
+          return { success: true, orderId: order.id, message: 'Order submitted successfully' }
+        }
+      }
+
+      return { success: false, message: 'Failed to create order' }
+    } catch (error) {
+      console.error('[v0] Error submitting order:', error)
+      return { success: false, message: 'Error submitting order' }
+    }
+  }, [cart, supabaseReady, getTotal, clearCart])
+
   return {
     cart,
     isLoading,
+    supabaseReady,
     addToCart,
     removeFromCart,
     updateQuantity,
     clearCart,
     getTotal,
     getItemCount,
+    submitOrderToSupabase,
   }
 }
