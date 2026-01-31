@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { WHATSAPP_NUMBER } from '@/lib/config'
 
 interface CartItem {
   id: string
@@ -47,48 +47,21 @@ export default function CartPage() {
   }
 
   const handleCheckout = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      toast.error('Please sign in to checkout')
-      return
-    }
-
     setLoading(true)
     try {
-      // Create order
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert([{
-          user_id: user.id,
-          total_amount: total,
-          status: 'pending',
-          payment_method: 'card'
-        }])
-        .select()
-        .single()
-
-      if (orderError) throw orderError
-
-      // Create order items
-      const orderItems = cartItems.map(item => ({
-        order_id: order.id,
-        service_id: item.service_id,
-        quantity: quantities[item.service_id] || item.quantity || 1,
-        unit_price: item.service?.price || 0
-      }))
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems)
-
-      if (itemsError) throw itemsError
-
-      toast.success('Order created! Proceeding to payment...')
-      // Redirect to payment page
-      // router.push(`/checkout/${order.id}`)
+      // Create order summary for WhatsApp
+      const orderSummary = cartItems.map(item => 
+        `• ${item.service?.name}: ${quantities[item.service_id] || item.quantity || 1}x ${item.service?.price} TND`
+      ).join('%0A')
+      
+      const message = `Bonjour, je voudrais passer une commande:%0A%0A${orderSummary}%0A%0ATotal: ${total.toFixed(2)} TND%0A%0AVerification et confirmation du paiement.`
+      
+      // Redirect to WhatsApp with order details
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank')
+      
+      toast.success('Redirecting to WhatsApp for payment confirmation...')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to create order')
+      toast.error(error instanceof Error ? error.message : 'Failed to process order')
     } finally {
       setLoading(false)
     }

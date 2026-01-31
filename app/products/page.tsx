@@ -1,12 +1,11 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { supabase } from '@/lib/supabase'
-import { ShoppingCart, Heart, Filter } from 'lucide-react'
+import { ShoppingCart, Heart } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Service {
@@ -120,21 +119,16 @@ export default function ProductsPage() {
             </div>
             <span className="text-xl font-bold text-foreground hidden sm:inline">AtlasVault</span>
           </Link>
-          <div className="flex gap-2 sm:gap-4 items-center">
-            <Link href="/cart">
-              <Button variant="ghost" size="sm" className="relative">
-                <ShoppingCart className="w-5 h-5" />
-                {cart.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-destructive text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                    {cart.length}
-                  </span>
-                )}
-              </Button>
-            </Link>
-            <Link href="/dashboard">
-              <Button variant="ghost" size="sm">Account</Button>
-            </Link>
-          </div>
+          <Link href="/cart">
+            <Button variant="ghost" size="sm" className="relative">
+              <ShoppingCart className="w-5 h-5" />
+              {cart.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-destructive text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                  {cart.length}
+                </span>
+              )}
+            </Button>
+          </Link>
         </div>
       </header>
 

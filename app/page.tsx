@@ -61,13 +61,8 @@ export default function HomePage() {
                 Shop
               </Button>
             </Link>
-            <Link href="/login">
-              <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="bg-primary hover:bg-primary/90 text-white">
-                Get Started
-              </Button>
+            <Link href="/admin">
+              <Button variant="ghost" className="text-xs">Admin</Button>
             </Link>
           </div>
         </div>
@@ -87,11 +82,6 @@ export default function HomePage() {
             <Link href="/products">
               <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white">
                 Start Shopping
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent">
-                Create Account
               </Button>
             </Link>
           </div>
@@ -214,11 +204,11 @@ export default function HomePage() {
             Ready to Get Started?
           </h2>
           <p className="text-muted-foreground mb-8 text-lg">
-            Join thousands of satisfied customers. Start shopping today.
+            Browse our digital services and place your order today.
           </p>
-          <Link href="/signup">
+          <Link href="/products">
             <Button size="lg" className="bg-primary hover:bg-primary/90 text-white">
-              Create Your Account
+              Shop Now
             </Button>
           </Link>
         </div>
@@ -249,21 +239,13 @@ export default function HomePage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-foreground mb-3">Account</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/login" className="hover:text-primary">Sign In</Link></li>
-                <li><Link href="/signup" className="hover:text-primary">Create Account</Link></li>
-                <li><Link href="/dashboard" className="hover:text-primary">Dashboard</Link></li>
-              </ul>
-            </div>
-            <div>
               <h4 className="font-semibold text-foreground mb-3">Support</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="#" className="hover:text-primary">Contact Us</Link></li>
+                <li><a href="https://wa.me/YOUR_NUMBER" target="_blank" rel="noopener noreferrer" className="hover:text-primary">Contact via WhatsApp</a></li>
                 <li><Link href="#" className="hover:text-primary">FAQ</Link></li>
-                <li><Link href="#" className="hover:text-primary">Privacy Policy</Link></li>
               </ul>
             </div>
+
           </div>
           <div className="border-t border-border pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
             <p>&copy; 2024 AtlasVault. All rights reserved.</p>
