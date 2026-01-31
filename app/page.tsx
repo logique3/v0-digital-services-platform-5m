@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Smartphone, Gamepad2, Film, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { CartBadge } from '@/components/CartBadge';
 
 const categories = [
   {
@@ -61,6 +62,7 @@ export default function HomePage() {
                 Shop
               </Button>
             </Link>
+            <CartBadge />
             <Link href="/admin">
               <Button variant="ghost" className="text-xs">Admin</Button>
             </Link>

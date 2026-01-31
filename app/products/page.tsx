@@ -5,8 +5,10 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ShoppingCart, Heart } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import { toast } from 'sonner'
+import { CartBadge } from '@/components/CartBadge'
+import { useCart } from '@/hooks/useCart'
 
 interface Service {
   id: string
@@ -80,7 +82,7 @@ export default function ProductsPage() {
   const searchParams = useSearchParams()
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [services, setServices] = useState<Service[]>([])
-  const [cart, setCart] = useState<string[]>([])
+  const { addToCart } = useCart()
 
   useEffect(() => {
     const category = searchParams?.get('category') || 'vault'
@@ -101,9 +103,15 @@ export default function ProductsPage() {
     setServices(formattedServices)
   }, [searchParams])
 
-  const addToCart = (serviceId: string) => {
-    setCart(prev => [...prev, serviceId])
-    toast.success('Added to cart')
+  const handleAddToCart = (service: Service) => {
+    addToCart({
+      service_id: service.id,
+      name: service.name,
+      price: service.price,
+      quantity: 1,
+      image_url: service.image_url,
+    })
+    toast.success(`${service.name} added to cart!`)
   }
 
   const currentCategory = categoryData[selectedCategory as keyof typeof categoryData]
@@ -119,16 +127,7 @@ export default function ProductsPage() {
             </div>
             <span className="text-xl font-bold text-foreground hidden sm:inline">AtlasVault</span>
           </Link>
-          <Link href="/cart">
-            <Button variant="ghost" size="sm" className="relative">
-              <ShoppingCart className="w-5 h-5" />
-              {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-destructive text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                  {cart.length}
-                </span>
-              )}
-            </Button>
-          </Link>
+          <CartBadge />
         </div>
       </header>
 
@@ -207,7 +206,7 @@ export default function ProductsPage() {
                       </div>
                       <Button 
                         className="w-full bg-primary hover:bg-primary/90 text-white"
-                        onClick={() => addToCart(service.id)}
+                        onClick={() => handleAddToCart(service)}
                       >
                         <ShoppingCart className="w-4 h-4 mr-2" />
                         Add to Cart
